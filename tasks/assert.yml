@@ -14,23 +14,6 @@
       - rsyslog_preservefqdn is boolean
     quiet: true
 
-- name: assert | Test rsyslog_remote_selector
-  ansible.builtin.assert:
-    that:
-      - rsyslog_remote_selector is defined
-      - rsyslog_remote_selector is string
-      - rsyslog_remote_selector is not none
-    quiet: true
-
-- name: assert | Test rsyslog_remote_port
-  ansible.builtin.assert:
-    that:
-      - rsyslog_remote_port is defined
-      - rsyslog_remote_port is number
-      - rsyslog_remote_port > 0
-      - rsyslog_remote_port < 65536
-    quiet: true
-
 - name: assert | Test rsyslog_dircreatemode
   ansible.builtin.assert:
     that:
