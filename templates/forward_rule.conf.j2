@@ -11,7 +11,6 @@
 # Example
 # *.* @@logging.server.net:514
 
-{% for remote in rsyslog_remotes %}
 ### begin forwarding rule ###
 # Uncomment the lines below if you wish to configure further.
 #$ActionQueueFileName fwdRule1 # unique name prefix for spool files
@@ -19,17 +18,16 @@
 #$ActionQueueSaveOnShutdown on # save messages to disk on shutdown
 #$ActionQueueType LinkedList   # run asynchronously
 #$ActionResumeRetryCount -1    # infinite retries if host is down
-{{ remote.selector }} {{ '@@' if remote.tcp else '@' }}{{ remote.hostname }}{{ ':' if remote.port }}{{ remote.port }}
-### end forwarding rule ###
-
+{% for remote in rsyslog_remotes %}
+{{ remote.selector }} {{ '@@' if remote.protocol is defined and remote.protocol == 'tcp' else '@' }}{{ remote.hostname }}{{ ':' if remote.port is defined }}{{ remote.port | default(":514") }}
 {% endfor %}
+### end forwarding rule ###
 {% endif %}
 
 {% if rsyslog_config_file_format == 'advanced' %}
 # Example
 # *.* action(type="omfwd" Target="logging.server.net" Port="514" Protocol="tcp")
 
-{% for remote in rsyslog_remotes %}
 ### begin forwarding rule ###
 # Uncomment the lines below if you wish to configure further.
 #queue.filename="fwdRule1"       # unique name prefix for spool files
@@ -37,16 +35,12 @@
 #queue.saveonshutdown="on"       # save messages to disk on shutdown
 #queue.type="LinkedList"         # run asynchronously
 #action.resumeRetryCount="-1"    # infinite retries if host is down
-{{ remote.selector }} action(type="omfwd" Target="{{ remote.hostname }}"
-{% if remote.port %}
-Port="{{ remote.port }}"
-{% endif %}
-Protocol="{{ 'tcp' if remote.tcp else 'udp' }}"
-{% if remote.template %}
-Template="{{ remote.template }}"
-{% endif %}
-KeepAlive="on")
-### end forwarding rule ###
-
+{% for remote in rsyslog_remotes %}
+{{ remote.selector }} action(type="omfwd" Target="{{ remote.hostname }}" Port="{{ remote.port | default(514) }}" Protocol="{{ remote.protocol | default('tcp') }}"
+{%- if remote.template is defined %}
+ Template="{{ remote.template }}"
+{%- endif %}
+ KeepAlive="on")
 {% endfor %}
+### end forwarding rule ###
 {% endif %}
